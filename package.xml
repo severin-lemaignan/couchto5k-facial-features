@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package>
+  <name>facialexpression</name>
+  <version>1.0.0</version>
+  <description>Assess in real time the user's facial expressions</description>
+
+  <maintainer email="severin.lemaignan@uwe.ac.uk">Séverin Lemaignan</maintainer>
+  <license>BSD</license>
+  <author>katie Winkle</author>
+  <author>Séverin Lemaignan</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>roscpp</build_depend>
+  <build_depend>std_msgs</build_depend>
+
+</package>

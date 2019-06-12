@@ -37,13 +37,11 @@
 
 // ros includes
 
-#include "ros/ros.h"
-#include "std_msgs/String.h"
 #include <sstream>
 
 // Local includes
 
-#include "LandmarkCoreIncludes.h"
+#include <LandmarkCoreIncludes.h>
 
 #include <Face_utils.h>
 #include <FaceAnalyser.h>
@@ -53,6 +51,9 @@
 #include <SequenceCapture.h>
 #include <Visualizer.h>
 #include <VisualizationUtils.h>
+
+#include <ros/ros.h>
+#include <std_msgs/String.h>
 
 #ifndef CONFIG_DIR
 #define CONFIG_DIR "~"
@@ -259,28 +260,30 @@ int main(int argc, char **argv)
 			for (auto pair : aus_intensity)
 			{
 				//if statements to capture only au12 and au25
-				if (pair.first == AU12) {
+				if (pair.first == "AU12") {
 					std::cout << pair.first << " " << pair.second << std::endl;
 
 					std_msgs::String msg;
+					std::stringstream ss;
 					ss << pair.second;
 					msg.data = ss.str();
 
 					ROS_INFO("%s", msg.data.c_str());
 
-					au12_pub.publish(msg)
+					au12_pub.publish(msg);
 				}
 
-				if (pair.first == AU25) {
+				if (pair.first == "AU25") {
 					std::cout << pair.first << " " << pair.second << std::endl;
 
 					std_msgs::String msg;
+					std::stringstream ss;
 					ss << pair.second;
 					msg.data = ss.str();
 
 					ROS_INFO("%s", msg.data.c_str());
 
-					au25_pub.publish(msg)
+					au25_pub.publish(msg);
 				}
 
 			}
