@@ -186,6 +186,8 @@ int main(int argc, char **argv)
 			// Converting to grayscale
 			cv::Mat_<uchar> grayscale_image = sequence_reader.GetGrayFrame();
 
+			cv::rotate(captured_image, captured_image, cv::ROTATE_90_CLOCKWISE);
+			cv::rotate(grayscale_image, grayscale_image, cv::ROTATE_90_CLOCKWISE);
 
 			// The actual facial landmark detection / tracking
 			bool detection_success = LandmarkDetector::DetectLandmarksInVideo(captured_image, face_model, det_parameters, grayscale_image);
