@@ -193,14 +193,14 @@ int main(int argc, char **argv)
 			bool detection_success = LandmarkDetector::DetectLandmarksInVideo(captured_image, face_model, det_parameters, grayscale_image);
 			
 			// Gaze tracking, absolute gaze direction
-			cv::Point3f gazeDirection0(0, 0, 0); cv::Point3f gazeDirection1(0, 0, 0); cv::Vec2d gazeAngle(0, 0);
+			//cv::Point3f gazeDirection0(0, 0, 0); cv::Point3f gazeDirection1(0, 0, 0); cv::Vec2d gazeAngle(0, 0);
 
-			if (detection_success && face_model.eye_model)
-			{
-				GazeAnalysis::EstimateGaze(face_model, gazeDirection0, sequence_reader.fx, sequence_reader.fy, sequence_reader.cx, sequence_reader.cy, true);
-				GazeAnalysis::EstimateGaze(face_model, gazeDirection1, sequence_reader.fx, sequence_reader.fy, sequence_reader.cx, sequence_reader.cy, false);
-				gazeAngle = GazeAnalysis::GetGazeAngle(gazeDirection0, gazeDirection1);
-			}
+			//if (detection_success && face_model.eye_model)
+			//{
+			//	GazeAnalysis::EstimateGaze(face_model, gazeDirection0, sequence_reader.fx, sequence_reader.fy, sequence_reader.cx, sequence_reader.cy, true);
+			//	GazeAnalysis::EstimateGaze(face_model, gazeDirection1, sequence_reader.fx, sequence_reader.fy, sequence_reader.cx, sequence_reader.cy, false);
+			//	gazeAngle = GazeAnalysis::GetGazeAngle(gazeDirection0, gazeDirection1);
+			//}
 			
 			// Do face alignment
 			cv::Mat sim_warped_img;
@@ -215,18 +215,18 @@ int main(int argc, char **argv)
 			}
 			
 			// Work out the pose of the head from the tracked model
-			cv::Vec6d pose_estimate = LandmarkDetector::GetPose(face_model, sequence_reader.fx, sequence_reader.fy, sequence_reader.cx, sequence_reader.cy);
+			//cv::Vec6d pose_estimate = LandmarkDetector::GetPose(face_model, sequence_reader.fx, sequence_reader.fy, sequence_reader.cx, sequence_reader.cy);
 
 			// Keeping track of FPS
 			fps_tracker.AddFrame();
 
 			// Displaying the tracking visualizations
 			visualizer.SetImage(captured_image, sequence_reader.fx, sequence_reader.fy, sequence_reader.cx, sequence_reader.cy);
-			visualizer.SetObservationFaceAlign(sim_warped_img);
-			visualizer.SetObservationHOG(hog_descriptor, num_hog_rows, num_hog_cols);
+			//visualizer.SetObservationFaceAlign(sim_warped_img);
+			//visualizer.SetObservationHOG(hog_descriptor, num_hog_rows, num_hog_cols);
 			visualizer.SetObservationLandmarks(face_model.detected_landmarks, face_model.detection_certainty, face_model.GetVisibilities());
-			visualizer.SetObservationPose(pose_estimate, face_model.detection_certainty);
-			visualizer.SetObservationGaze(gazeDirection0, gazeDirection1, LandmarkDetector::CalculateAllEyeLandmarks(face_model), LandmarkDetector::Calculate3DEyeLandmarks(face_model, sequence_reader.fx, sequence_reader.fy, sequence_reader.cx, sequence_reader.cy), face_model.detection_certainty);
+			//visualizer.SetObservationPose(pose_estimate, face_model.detection_certainty);
+			//visualizer.SetObservationGaze(gazeDirection0, gazeDirection1, LandmarkDetector::CalculateAllEyeLandmarks(face_model), LandmarkDetector::Calculate3DEyeLandmarks(face_model, sequence_reader.fx, sequence_reader.fy, sequence_reader.cx, sequence_reader.cy), face_model.detection_certainty);
 			visualizer.SetObservationActionUnits(face_analyser.GetCurrentAUsReg(), face_analyser.GetCurrentAUsClass());
 			visualizer.SetFps(fps_tracker.GetFPS());
 
@@ -240,19 +240,19 @@ int main(int argc, char **argv)
 			}
 
 			// Setting up the recorder output
-			open_face_rec.SetObservationHOG(detection_success, hog_descriptor, num_hog_rows, num_hog_cols, 31); // The number of channels in HOG is fixed at the moment, as using FHOG
-			open_face_rec.SetObservationVisualization(visualizer.GetVisImage());
-			open_face_rec.SetObservationActionUnits(face_analyser.GetCurrentAUsReg(), face_analyser.GetCurrentAUsClass());
-			open_face_rec.SetObservationLandmarks(face_model.detected_landmarks, face_model.GetShape(sequence_reader.fx, sequence_reader.fy, sequence_reader.cx, sequence_reader.cy),
-				face_model.params_global, face_model.params_local, face_model.detection_certainty, detection_success);
-			open_face_rec.SetObservationPose(pose_estimate);
-			open_face_rec.SetObservationGaze(gazeDirection0, gazeDirection1, gazeAngle, LandmarkDetector::CalculateAllEyeLandmarks(face_model), LandmarkDetector::Calculate3DEyeLandmarks(face_model, sequence_reader.fx, sequence_reader.fy, sequence_reader.cx, sequence_reader.cy));
-			open_face_rec.SetObservationTimestamp(sequence_reader.time_stamp);
-			open_face_rec.SetObservationFaceID(0);
-			open_face_rec.SetObservationFrameNumber(sequence_reader.GetFrameNumber());
-			open_face_rec.SetObservationFaceAlign(sim_warped_img);
-			open_face_rec.WriteObservation();
-			open_face_rec.WriteObservationTracked();
+			//open_face_rec.SetObservationHOG(detection_success, hog_descriptor, num_hog_rows, num_hog_cols, 31); // The number of channels in HOG is fixed at the moment, as using FHOG
+			//open_face_rec.SetObservationVisualization(visualizer.GetVisImage());
+			//open_face_rec.SetObservationActionUnits(face_analyser.GetCurrentAUsReg(), face_analyser.GetCurrentAUsClass());
+			//open_face_rec.SetObservationLandmarks(face_model.detected_landmarks, face_model.GetShape(sequence_reader.fx, sequence_reader.fy, sequence_reader.cx, sequence_reader.cy),
+			//	face_model.params_global, face_model.params_local, face_model.detection_certainty, detection_success);
+			//open_face_rec.SetObservationPose(pose_estimate);
+			//open_face_rec.SetObservationGaze(gazeDirection0, gazeDirection1, gazeAngle, LandmarkDetector::CalculateAllEyeLandmarks(face_model), LandmarkDetector::Calculate3DEyeLandmarks(face_model, sequence_reader.fx, sequence_reader.fy, sequence_reader.cx, sequence_reader.cy));
+			//open_face_rec.SetObservationTimestamp(sequence_reader.time_stamp);
+			//open_face_rec.SetObservationFaceID(0);
+			//open_face_rec.SetObservationFrameNumber(sequence_reader.GetFrameNumber());
+			//open_face_rec.SetObservationFaceAlign(sim_warped_img);
+			//open_face_rec.WriteObservation();
+			//open_face_rec.WriteObservationTracked();
 
 			//TESTING - THESE ARE THE THNGS I'D WANT TO PUBLISH (rather than printing to screen)...//
 			//specifically want intensity for au12 lip puller and au25 lips part//
@@ -270,7 +270,7 @@ int main(int argc, char **argv)
 					ss << pair.second;
 					msg.data = ss.str();
 
-					ROS_INFO("%s", msg.data.c_str());
+					//ROS_INFO("%s", msg.data.c_str());
 
 					au12_pub.publish(msg);
 				}
@@ -283,7 +283,7 @@ int main(int argc, char **argv)
 					ss << pair.second;
 					msg.data = ss.str();
 
-					ROS_INFO("%s", msg.data.c_str());
+					//ROS_INFO("%s", msg.data.c_str());
 
 					au25_pub.publish(msg);
 				}
