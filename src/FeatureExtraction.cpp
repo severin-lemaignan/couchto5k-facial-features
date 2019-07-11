@@ -192,6 +192,7 @@ int main(int argc, char **argv)
             // The actual facial landmark detection / tracking
             bool detection_success = LandmarkDetector::DetectLandmarksInVideo(captured_image, face_model, det_parameters, grayscale_image);
 
+
             // Gaze tracking, absolute gaze direction
             //cv::Point3f gazeDirection0(0, 0, 0); cv::Point3f gazeDirection1(0, 0, 0); cv::Vec2d gazeAngle(0, 0);
 
@@ -254,40 +255,49 @@ int main(int argc, char **argv)
             //open_face_rec.WriteObservation();
             //open_face_rec.WriteObservationTracked();
 
-            //TESTING - THESE ARE THE THNGS I'D WANT TO PUBLISH (rather than printing to screen)...//
-            //specifically want intensity for au12 lip puller and au25 lips part//
-            auto aus_intensity = face_analyser.GetCurrentAUsReg();
-            auto aus_presence = face_analyser.GetCurrentAUsClass();
+            if (!detection_success) {
 
-            for (auto pair : aus_intensity)
-            {
-                //if statements to capture only au12 and au25
-                if (pair.first == "AU12") {
-                    std::cout << pair.first << " " << pair.second << std::endl;
-
+                    std::cout << "No face detected!" << std::endl;
                     std_msgs::String msg;
-                    std::stringstream ss;
-                    ss << pair.second;
-                    msg.data = ss.str();
-
-                    //ROS_INFO("%s", msg.data.c_str());
-
+                    msg.data = "NaN";
                     au12_pub.publish(msg);
-                }
-
-                if (pair.first == "AU25") {
-                    std::cout << pair.first << " " << pair.second << std::endl;
-
-                    std_msgs::String msg;
-                    std::stringstream ss;
-                    ss << pair.second;
-                    msg.data = ss.str();
-
-                    //ROS_INFO("%s", msg.data.c_str());
-
                     au25_pub.publish(msg);
-                }
 
+            }
+            else {
+                auto aus_intensity = face_analyser.GetCurrentAUsReg();
+                auto aus_presence = face_analyser.GetCurrentAUsClass();
+
+                for (auto pair : aus_intensity)
+                {
+                    //if statements to capture only au12 and au25
+                    if (pair.first == "AU12") {
+                        std::cout << pair.first << " " << pair.second << std::endl;
+
+                        std_msgs::String msg;
+                        std::stringstream ss;
+                        ss << pair.second;
+                        msg.data = ss.str();
+
+                        //ROS_INFO("%s", msg.data.c_str());
+
+                        au12_pub.publish(msg);
+                    }
+
+                    if (pair.first == "AU25") {
+                        std::cout << pair.first << " " << pair.second << std::endl;
+
+                        std_msgs::String msg;
+                        std::stringstream ss;
+                        ss << pair.second;
+                        msg.data = ss.str();
+
+                        //ROS_INFO("%s", msg.data.c_str());
+
+                        au25_pub.publish(msg);
+                    }
+
+                }
             }
 
 
