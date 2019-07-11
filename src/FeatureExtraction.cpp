@@ -60,271 +60,271 @@
 #endif
 
 #define INFO_STREAM( stream ) \
-std::cout << stream << std::endl
+    std::cout << stream << std::endl
 
 #define WARN_STREAM( stream ) \
-std::cout << "Warning: " << stream << std::endl
+    std::cout << "Warning: " << stream << std::endl
 
 #define ERROR_STREAM( stream ) \
-std::cout << "Error: " << stream << std::endl
+    std::cout << "Error: " << stream << std::endl
 
 static void printErrorAndAbort(const std::string & error)
 {
-	std::cout << error << std::endl;
+    std::cout << error << std::endl;
 }
 
 #define FATAL_STREAM( stream ) \
-printErrorAndAbort( std::string( "Fatal error: " ) + stream )
+    printErrorAndAbort( std::string( "Fatal error: " ) + stream )
 
 using namespace std;
 
 vector<string> get_arguments(int argc, char **argv)
 {
 
-	vector<string> arguments;
+    vector<string> arguments;
 
-	// First argument is reserved for the name of the executable
-	for (int i = 0; i < argc; ++i)
-	{
-		arguments.push_back(string(argv[i]));
-	}
-	return arguments;
+    // First argument is reserved for the name of the executable
+    for (int i = 0; i < argc; ++i)
+    {
+        arguments.push_back(string(argv[i]));
+    }
+    return arguments;
 }
 
 int main(int argc, char **argv)
 {
 
-	ros::init(argc, argv, "face_data");
+    ros::init(argc, argv, "face_data");
 
-	ros::NodeHandle n;
+    ros::NodeHandle n;
 
-	ros::Publisher au12_pub = n.advertise<std_msgs::String>("au_12", 1000); // TO-DO: fix message type
-	ros::Publisher au25_pub = n.advertise<std_msgs::String>("au_25", 1000); // TO-DO: fix message type
+    ros::Publisher au12_pub = n.advertise<std_msgs::String>("au_12", 1000); // TO-DO: fix message type
+    ros::Publisher au25_pub = n.advertise<std_msgs::String>("au_25", 1000); // TO-DO: fix message type
 
-	vector<string> arguments = get_arguments(argc, argv);
+    vector<string> arguments = get_arguments(argc, argv);
 
-	// no arguments: output usage
-	if (arguments.size() == 1)
-	{
-		cout << "For command line arguments see:" << endl;
-		cout << " https://github.com/TadasBaltrusaitis/OpenFace/wiki/Command-line-arguments";
-		return 0;
-	}
+    // no arguments: output usage
+    if (arguments.size() == 1)
+    {
+        cout << "For command line arguments see:" << endl;
+        cout << " https://github.com/TadasBaltrusaitis/OpenFace/wiki/Command-line-arguments";
+        return 0;
+    }
 
-	// Load the modules that are being used for tracking and face analysis
-	// Load face landmark detector
-	LandmarkDetector::FaceModelParameters det_parameters(arguments);
-	// Always track gaze in feature extraction
-	LandmarkDetector::CLNF face_model(det_parameters.model_location);
+    // Load the modules that are being used for tracking and face analysis
+    // Load face landmark detector
+    LandmarkDetector::FaceModelParameters det_parameters(arguments);
+    // Always track gaze in feature extraction
+    LandmarkDetector::CLNF face_model(det_parameters.model_location);
 
-	if (!face_model.loaded_successfully)
-	{
-		cout << "ERROR: Could not load the landmark detector" << endl;
-		return 1;
-	}
+    if (!face_model.loaded_successfully)
+    {
+        cout << "ERROR: Could not load the landmark detector" << endl;
+        return 1;
+    }
 
-	// Load facial feature extractor and AU analyser
-	FaceAnalysis::FaceAnalyserParameters face_analysis_params(arguments);
-	FaceAnalysis::FaceAnalyser face_analyser(face_analysis_params);
+    // Load facial feature extractor and AU analyser
+    FaceAnalysis::FaceAnalyserParameters face_analysis_params(arguments);
+    FaceAnalysis::FaceAnalyser face_analyser(face_analysis_params);
 
-	if (!face_model.eye_model)
-	{
-		cout << "WARNING: no eye model found" << endl;
-	}
+    if (!face_model.eye_model)
+    {
+        cout << "WARNING: no eye model found" << endl;
+    }
 
-	if (face_analyser.GetAUClassNames().size() == 0 && face_analyser.GetAUClassNames().size() == 0)
-	{
-		cout << "WARNING: no Action Unit models found" << endl;
-	}
+    if (face_analyser.GetAUClassNames().size() == 0 && face_analyser.GetAUClassNames().size() == 0)
+    {
+        cout << "WARNING: no Action Unit models found" << endl;
+    }
 
-	Utilities::SequenceCapture sequence_reader;
+    Utilities::SequenceCapture sequence_reader;
 
-	// A utility for visualizing the results
-	Utilities::Visualizer visualizer(arguments);
+    // A utility for visualizing the results
+    Utilities::Visualizer visualizer(arguments);
 
-	// Tracking FPS for visualization
-	Utilities::FpsTracker fps_tracker;
-	fps_tracker.AddFrame();
+    // Tracking FPS for visualization
+    Utilities::FpsTracker fps_tracker;
+    fps_tracker.AddFrame();
 
-	while (true) // this is not a for loop as we might also be reading from a webcam
-	{
+    while (true) // this is not a for loop as we might also be reading from a webcam
+    {
 
-		// The sequence reader chooses what to open based on command line arguments provided
-		if (!sequence_reader.Open(arguments))
-			break;
+        // The sequence reader chooses what to open based on command line arguments provided
+        if (!sequence_reader.Open(arguments))
+            break;
 
-		INFO_STREAM("Device or file opened");
+        INFO_STREAM("Device or file opened");
 
-		if (sequence_reader.IsWebcam())
-		{
-			INFO_STREAM("WARNING: using a webcam in feature extraction, Action Unit predictions will not be as accurate in real-time webcam mode");
-			INFO_STREAM("WARNING: using a webcam in feature extraction, forcing visualization of tracking to allow quitting the application (press q)");
-			visualizer.vis_track = true;
-		}
+        if (sequence_reader.IsWebcam())
+        {
+            INFO_STREAM("WARNING: using a webcam in feature extraction, Action Unit predictions will not be as accurate in real-time webcam mode");
+            INFO_STREAM("WARNING: using a webcam in feature extraction, forcing visualization of tracking to allow quitting the application (press q)");
+            visualizer.vis_track = true;
+        }
 
-		cv::Mat captured_image;
+        cv::Mat captured_image;
 
-		Utilities::RecorderOpenFaceParameters recording_params(arguments, true, sequence_reader.IsWebcam(),
-			sequence_reader.fx, sequence_reader.fy, sequence_reader.cx, sequence_reader.cy, sequence_reader.fps);
-		if (!face_model.eye_model)
-		{
-			recording_params.setOutputGaze(false);
-		}
-		Utilities::RecorderOpenFace open_face_rec(sequence_reader.name, recording_params, arguments);
+        Utilities::RecorderOpenFaceParameters recording_params(arguments, true, sequence_reader.IsWebcam(),
+                sequence_reader.fx, sequence_reader.fy, sequence_reader.cx, sequence_reader.cy, sequence_reader.fps);
+        if (!face_model.eye_model)
+        {
+            recording_params.setOutputGaze(false);
+        }
+        Utilities::RecorderOpenFace open_face_rec(sequence_reader.name, recording_params, arguments);
 
-		if (recording_params.outputGaze() && !face_model.eye_model)
-			cout << "WARNING: no eye model defined, but outputting gaze" << endl;
+        if (recording_params.outputGaze() && !face_model.eye_model)
+            cout << "WARNING: no eye model defined, but outputting gaze" << endl;
 
-		captured_image = sequence_reader.GetNextFrame();
+        captured_image = sequence_reader.GetNextFrame();
 
-		// For reporting progress
-		double reported_completion = 0;
+        // For reporting progress
+        double reported_completion = 0;
 
-		INFO_STREAM("Starting tracking");
-		while (!captured_image.empty())
-		{
-			// Converting to grayscale
-			cv::Mat_<uchar> grayscale_image = sequence_reader.GetGrayFrame();
+        INFO_STREAM("Starting tracking");
+        while (!captured_image.empty())
+        {
+            // Converting to grayscale
+            cv::Mat_<uchar> grayscale_image = sequence_reader.GetGrayFrame();
 
-			cv::rotate(captured_image, captured_image, cv::ROTATE_90_CLOCKWISE);
-			cv::rotate(grayscale_image, grayscale_image, cv::ROTATE_90_CLOCKWISE);
+            cv::rotate(captured_image, captured_image, cv::ROTATE_90_CLOCKWISE);
+            cv::rotate(grayscale_image, grayscale_image, cv::ROTATE_90_CLOCKWISE);
 
-			// The actual facial landmark detection / tracking
-			bool detection_success = LandmarkDetector::DetectLandmarksInVideo(captured_image, face_model, det_parameters, grayscale_image);
-			
-			// Gaze tracking, absolute gaze direction
-			//cv::Point3f gazeDirection0(0, 0, 0); cv::Point3f gazeDirection1(0, 0, 0); cv::Vec2d gazeAngle(0, 0);
+            // The actual facial landmark detection / tracking
+            bool detection_success = LandmarkDetector::DetectLandmarksInVideo(captured_image, face_model, det_parameters, grayscale_image);
 
-			//if (detection_success && face_model.eye_model)
-			//{
-			//	GazeAnalysis::EstimateGaze(face_model, gazeDirection0, sequence_reader.fx, sequence_reader.fy, sequence_reader.cx, sequence_reader.cy, true);
-			//	GazeAnalysis::EstimateGaze(face_model, gazeDirection1, sequence_reader.fx, sequence_reader.fy, sequence_reader.cx, sequence_reader.cy, false);
-			//	gazeAngle = GazeAnalysis::GetGazeAngle(gazeDirection0, gazeDirection1);
-			//}
-			
-			// Do face alignment
-			cv::Mat sim_warped_img;
-			cv::Mat_<double> hog_descriptor; int num_hog_rows = 0, num_hog_cols = 0;
+            // Gaze tracking, absolute gaze direction
+            //cv::Point3f gazeDirection0(0, 0, 0); cv::Point3f gazeDirection1(0, 0, 0); cv::Vec2d gazeAngle(0, 0);
 
-			// Perform AU detection and HOG feature extraction, as this can be expensive only compute it if needed by output or visualization
-			if (recording_params.outputAlignedFaces() || recording_params.outputHOG() || recording_params.outputAUs() || visualizer.vis_align || visualizer.vis_hog || visualizer.vis_aus)
-			{
-				face_analyser.AddNextFrame(captured_image, face_model.detected_landmarks, face_model.detection_success, sequence_reader.time_stamp, sequence_reader.IsWebcam());
-				face_analyser.GetLatestAlignedFace(sim_warped_img);
-				face_analyser.GetLatestHOG(hog_descriptor, num_hog_rows, num_hog_cols);
-			}
-			
-			// Work out the pose of the head from the tracked model
-			//cv::Vec6d pose_estimate = LandmarkDetector::GetPose(face_model, sequence_reader.fx, sequence_reader.fy, sequence_reader.cx, sequence_reader.cy);
+            //if (detection_success && face_model.eye_model)
+            //{
+            //	GazeAnalysis::EstimateGaze(face_model, gazeDirection0, sequence_reader.fx, sequence_reader.fy, sequence_reader.cx, sequence_reader.cy, true);
+            //	GazeAnalysis::EstimateGaze(face_model, gazeDirection1, sequence_reader.fx, sequence_reader.fy, sequence_reader.cx, sequence_reader.cy, false);
+            //	gazeAngle = GazeAnalysis::GetGazeAngle(gazeDirection0, gazeDirection1);
+            //}
 
-			// Keeping track of FPS
-			fps_tracker.AddFrame();
+            // Do face alignment
+            cv::Mat sim_warped_img;
+            cv::Mat_<double> hog_descriptor; int num_hog_rows = 0, num_hog_cols = 0;
 
-			// Displaying the tracking visualizations
-			visualizer.SetImage(captured_image, sequence_reader.fx, sequence_reader.fy, sequence_reader.cx, sequence_reader.cy);
-			//visualizer.SetObservationFaceAlign(sim_warped_img);
-			//visualizer.SetObservationHOG(hog_descriptor, num_hog_rows, num_hog_cols);
-			visualizer.SetObservationLandmarks(face_model.detected_landmarks, face_model.detection_certainty, face_model.GetVisibilities());
-			//visualizer.SetObservationPose(pose_estimate, face_model.detection_certainty);
-			//visualizer.SetObservationGaze(gazeDirection0, gazeDirection1, LandmarkDetector::CalculateAllEyeLandmarks(face_model), LandmarkDetector::Calculate3DEyeLandmarks(face_model, sequence_reader.fx, sequence_reader.fy, sequence_reader.cx, sequence_reader.cy), face_model.detection_certainty);
-			visualizer.SetObservationActionUnits(face_analyser.GetCurrentAUsReg(), face_analyser.GetCurrentAUsClass());
-			visualizer.SetFps(fps_tracker.GetFPS());
+            // Perform AU detection and HOG feature extraction, as this can be expensive only compute it if needed by output or visualization
+            if (recording_params.outputAlignedFaces() || recording_params.outputHOG() || recording_params.outputAUs() || visualizer.vis_align || visualizer.vis_hog || visualizer.vis_aus)
+            {
+                face_analyser.AddNextFrame(captured_image, face_model.detected_landmarks, face_model.detection_success, sequence_reader.time_stamp, sequence_reader.IsWebcam());
+                face_analyser.GetLatestAlignedFace(sim_warped_img);
+                face_analyser.GetLatestHOG(hog_descriptor, num_hog_rows, num_hog_cols);
+            }
 
-			// detect key presses
-			char character_press = visualizer.ShowObservation();
-			
-			// quit processing the current sequence (useful when in Webcam mode)
-			if (character_press == 'q')
-			{
-				break;
-			}
+            // Work out the pose of the head from the tracked model
+            //cv::Vec6d pose_estimate = LandmarkDetector::GetPose(face_model, sequence_reader.fx, sequence_reader.fy, sequence_reader.cx, sequence_reader.cy);
 
-			// Setting up the recorder output
-			//open_face_rec.SetObservationHOG(detection_success, hog_descriptor, num_hog_rows, num_hog_cols, 31); // The number of channels in HOG is fixed at the moment, as using FHOG
-			//open_face_rec.SetObservationVisualization(visualizer.GetVisImage());
-			//open_face_rec.SetObservationActionUnits(face_analyser.GetCurrentAUsReg(), face_analyser.GetCurrentAUsClass());
-			//open_face_rec.SetObservationLandmarks(face_model.detected_landmarks, face_model.GetShape(sequence_reader.fx, sequence_reader.fy, sequence_reader.cx, sequence_reader.cy),
-			//	face_model.params_global, face_model.params_local, face_model.detection_certainty, detection_success);
-			//open_face_rec.SetObservationPose(pose_estimate);
-			//open_face_rec.SetObservationGaze(gazeDirection0, gazeDirection1, gazeAngle, LandmarkDetector::CalculateAllEyeLandmarks(face_model), LandmarkDetector::Calculate3DEyeLandmarks(face_model, sequence_reader.fx, sequence_reader.fy, sequence_reader.cx, sequence_reader.cy));
-			//open_face_rec.SetObservationTimestamp(sequence_reader.time_stamp);
-			//open_face_rec.SetObservationFaceID(0);
-			//open_face_rec.SetObservationFrameNumber(sequence_reader.GetFrameNumber());
-			//open_face_rec.SetObservationFaceAlign(sim_warped_img);
-			//open_face_rec.WriteObservation();
-			//open_face_rec.WriteObservationTracked();
+            // Keeping track of FPS
+            fps_tracker.AddFrame();
 
-			//TESTING - THESE ARE THE THNGS I'D WANT TO PUBLISH (rather than printing to screen)...//
-			//specifically want intensity for au12 lip puller and au25 lips part//
-			auto aus_intensity = face_analyser.GetCurrentAUsReg();
-			auto aus_presence = face_analyser.GetCurrentAUsClass();
+            // Displaying the tracking visualizations
+            visualizer.SetImage(captured_image, sequence_reader.fx, sequence_reader.fy, sequence_reader.cx, sequence_reader.cy);
+            //visualizer.SetObservationFaceAlign(sim_warped_img);
+            //visualizer.SetObservationHOG(hog_descriptor, num_hog_rows, num_hog_cols);
+            visualizer.SetObservationLandmarks(face_model.detected_landmarks, face_model.detection_certainty, face_model.GetVisibilities());
+            //visualizer.SetObservationPose(pose_estimate, face_model.detection_certainty);
+            //visualizer.SetObservationGaze(gazeDirection0, gazeDirection1, LandmarkDetector::CalculateAllEyeLandmarks(face_model), LandmarkDetector::Calculate3DEyeLandmarks(face_model, sequence_reader.fx, sequence_reader.fy, sequence_reader.cx, sequence_reader.cy), face_model.detection_certainty);
+            visualizer.SetObservationActionUnits(face_analyser.GetCurrentAUsReg(), face_analyser.GetCurrentAUsClass());
+            visualizer.SetFps(fps_tracker.GetFPS());
 
-			for (auto pair : aus_intensity)
-			{
-				//if statements to capture only au12 and au25
-				if (pair.first == "AU12") {
-					std::cout << pair.first << " " << pair.second << std::endl;
+            // detect key presses
+            char character_press = visualizer.ShowObservation();
 
-					std_msgs::String msg;
-					std::stringstream ss;
-					ss << pair.second;
-					msg.data = ss.str();
+            // quit processing the current sequence (useful when in Webcam mode)
+            if (character_press == 'q')
+            {
+                break;
+            }
 
-					//ROS_INFO("%s", msg.data.c_str());
+            // Setting up the recorder output
+            //open_face_rec.SetObservationHOG(detection_success, hog_descriptor, num_hog_rows, num_hog_cols, 31); // The number of channels in HOG is fixed at the moment, as using FHOG
+            //open_face_rec.SetObservationVisualization(visualizer.GetVisImage());
+            //open_face_rec.SetObservationActionUnits(face_analyser.GetCurrentAUsReg(), face_analyser.GetCurrentAUsClass());
+            //open_face_rec.SetObservationLandmarks(face_model.detected_landmarks, face_model.GetShape(sequence_reader.fx, sequence_reader.fy, sequence_reader.cx, sequence_reader.cy),
+            //	face_model.params_global, face_model.params_local, face_model.detection_certainty, detection_success);
+            //open_face_rec.SetObservationPose(pose_estimate);
+            //open_face_rec.SetObservationGaze(gazeDirection0, gazeDirection1, gazeAngle, LandmarkDetector::CalculateAllEyeLandmarks(face_model), LandmarkDetector::Calculate3DEyeLandmarks(face_model, sequence_reader.fx, sequence_reader.fy, sequence_reader.cx, sequence_reader.cy));
+            //open_face_rec.SetObservationTimestamp(sequence_reader.time_stamp);
+            //open_face_rec.SetObservationFaceID(0);
+            //open_face_rec.SetObservationFrameNumber(sequence_reader.GetFrameNumber());
+            //open_face_rec.SetObservationFaceAlign(sim_warped_img);
+            //open_face_rec.WriteObservation();
+            //open_face_rec.WriteObservationTracked();
 
-					au12_pub.publish(msg);
-				}
+            //TESTING - THESE ARE THE THNGS I'D WANT TO PUBLISH (rather than printing to screen)...//
+            //specifically want intensity for au12 lip puller and au25 lips part//
+            auto aus_intensity = face_analyser.GetCurrentAUsReg();
+            auto aus_presence = face_analyser.GetCurrentAUsClass();
 
-				if (pair.first == "AU25") {
-					std::cout << pair.first << " " << pair.second << std::endl;
+            for (auto pair : aus_intensity)
+            {
+                //if statements to capture only au12 and au25
+                if (pair.first == "AU12") {
+                    std::cout << pair.first << " " << pair.second << std::endl;
 
-					std_msgs::String msg;
-					std::stringstream ss;
-					ss << pair.second;
-					msg.data = ss.str();
+                    std_msgs::String msg;
+                    std::stringstream ss;
+                    ss << pair.second;
+                    msg.data = ss.str();
 
-					//ROS_INFO("%s", msg.data.c_str());
+                    //ROS_INFO("%s", msg.data.c_str());
 
-					au25_pub.publish(msg);
-				}
+                    au12_pub.publish(msg);
+                }
 
-			}
+                if (pair.first == "AU25") {
+                    std::cout << pair.first << " " << pair.second << std::endl;
+
+                    std_msgs::String msg;
+                    std::stringstream ss;
+                    ss << pair.second;
+                    msg.data = ss.str();
+
+                    //ROS_INFO("%s", msg.data.c_str());
+
+                    au25_pub.publish(msg);
+                }
+
+            }
 
 
-			
-			// Reporting progress
-			if (sequence_reader.GetProgress() >= reported_completion / 10.0)
-			{
-				cout << reported_completion * 10 << "% ";
-				if (reported_completion == 10)
-				{
-					cout << endl;
-				}
-				reported_completion = reported_completion + 1;
-			}
 
-			// Grabbing the next frame in the sequence
-			captured_image = sequence_reader.GetNextFrame();
+            // Reporting progress
+            if (sequence_reader.GetProgress() >= reported_completion / 10.0)
+            {
+                cout << reported_completion * 10 << "% ";
+                if (reported_completion == 10)
+                {
+                    cout << endl;
+                }
+                reported_completion = reported_completion + 1;
+            }
 
-		}
+            // Grabbing the next frame in the sequence
+            captured_image = sequence_reader.GetNextFrame();
 
-		INFO_STREAM("Closing output recorder");
-		open_face_rec.Close();
-		INFO_STREAM("Closing input reader");
-		sequence_reader.Close();
-		INFO_STREAM("Closed successfully");
+        }
 
-		if (recording_params.outputAUs())
-		{
-			INFO_STREAM("Postprocessing the Action Unit predictions");
-			face_analyser.PostprocessOutputFile(open_face_rec.GetCSVFile());
-		}
+        INFO_STREAM("Closing output recorder");
+        open_face_rec.Close();
+        INFO_STREAM("Closing input reader");
+        sequence_reader.Close();
+        INFO_STREAM("Closed successfully");
 
-		// Reset the models for the next video
-		face_analyser.Reset();
-		face_model.Reset();
+        if (recording_params.outputAUs())
+        {
+            INFO_STREAM("Postprocessing the Action Unit predictions");
+            face_analyser.PostprocessOutputFile(open_face_rec.GetCSVFile());
+        }
 
-	}
+        // Reset the models for the next video
+        face_analyser.Reset();
+        face_model.Reset();
 
-	return 0;
+    }
+
+    return 0;
 }
